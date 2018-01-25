@@ -22,102 +22,78 @@
 /**
  * @file A template for writing a Jalangi 2 analysis
  * @author  Koushik Sen
- *
  */
 
+ /**
+ * @author  Manjiri Birajdar 
+ * @description : analysis for finding dynamic dead writes	
+ */
+ 
+ 
 (function (sandbox) {
    /*
      *
      *
      * @global
      * @class
-     */
-    function MyAnalysis() {
-        
-		/**
-		* if its Read operation, then set boolReadOrWrite to false
-		* if its Write operation, then set boolReadOrWrite to true
-		**/
-				
-		var countRead = {};
-		var countWrite = {};
-		
-        /* 
-         * Taken from from C:\jalangi2\src\js\sample_analyses\scratch\SmemTest.js 
-         * 
-         */
+     */   
 
-		   function getValue(v) {
-            var type = typeof v;
-            if ((type === 'object' || type ==='function') && v!== null) {
-                var shadowObj = sandbox.smemory.getShadowObjectOfObject(v);
-                return sandbox.smemory.getIDFromShadowObjectOrFrame(shadowObj);
-            } else {
-                return v;
-            }
-        }
+    // Stack to maintain READ and WRITE operations on the literals
+    var stack  = [];
+
+    function MyAnalysis() {   
 
         /* 
-         * Taken from from C:\jalangi2\src\js\sample_analyses\scratch\SmemTest.js 
          * 
          * This callback is called after the creation of a literal. A literal can be a function literal, 
          * an object literal, an array literal, a number, a string, a boolean, a regular expression, null, NaN, Infinity, or undefined.
          * 
          */
         this.literal = function (iid, val, hasGetterSetter) {
-			 if (typeof val === 'function')
-			 {
-				//console.log(" Function iid = " +iid);
-			 }
-			 else
-			 {
-				 console.log("-----------------------------");
-				console.log("Variable iid = " +iid +"   value = " +val);
-				console.log("------------------------------");
-			 }
-			
-            return {result: val};
+
+            var shadowObj = sandbox.smemory.getShadowFrame(val);
+            var globalId = sandbox.smemory.getIDFromShadowObjectOrFrame(shadowObj); 
+
+             //After the creation of a literal, push it on to the stack
+           //  stack.push("WRITE, " +globalId +",  Location at " + J$.iidToLocation(J$.sid, iid)); 
+           stack.push("Write, (due to literal callback) Location at " + J$.iidToLocation(J$.sid, iid)); 
+        
         };
        
         /* 
-         * Taken from from C:\jalangi2\src\js\sample_analyses\scratch\SmemTest.js 
          * 
          * This callback is called after a variable is read.
          * 
          */
         this.read = function (iid, name, val, isGlobal, isScriptLocal) {
-            var shadowObj = sandbox.smemory.getShadowFrame(name);
-            console.log("READ "+sandbox.smemory.getIDFromShadowObjectOrFrame(shadowObj)+"." + name +" at " + J$.iidToLocation(J$.sid, iid));
-			
-			countRead[name] = (countRead[name] | val);			
-			console.log("countRead[" +name +"] = " +countRead[name]);
-			console.log();			
+            var shadowObj = sandbox.smemory.getShadowFrame(name);                  
+            var globalId = sandbox.smemory.getIDFromShadowObjectOrFrame(shadowObj);   
+
+            //when variable is read, pop the variable from the stack
+           // stack.pop("POP WRITE, " +globalId+"." + name +" Location at " + J$.iidToLocation(J$.sid, iid));
+           stack.pop("Write, " +globalId+"." + name +" Location at " + J$.iidToLocation(J$.sid, iid));
         };
 
-        /* 
-         * Taken from from C:\jalangi2\src\js\sample_analyses\scratch\SmemTest.js 
+        /*
          * 
          * This callback is called before a variable is written.
          * 
          */
         this.write = function (iid, name, val, lhs, isGlobal, isScriptLocal) {
             var shadowObj = sandbox.smemory.getShadowFrame(name);
-            console.log("WRITE "+sandbox.smemory.getIDFromShadowObjectOrFrame(shadowObj)+"." + name +" at " + J$.iidToLocation(J$.sid, iid));
-			
-			countWrite[name] = (countWrite[name] | val);	
-			console.log("countWrite[" +name +"] = " +countWrite[name]);	
-			console.log();		
-			
+            var globalId = sandbox.smemory.getIDFromShadowObjectOrFrame(shadowObj);
+       
+
+            //when variable is written, push the variable on the stack
+            //stack.push("WRITE, " +globalId+"." + name +" Location at " + J$.iidToLocation(J$.sid, iid));
+            stack.push("Write, (due to write callback) Location at " + J$.iidToLocation(J$.sid, iid));
         };
 				
 		this.endExecution = function () {      
-		/*	
-		 	for (var name in countRead)
-				console.log("countRead[" +name +"] = " +countRead[name]);
-			        
-			
-			for (var name in countWrite)
-             console.log("countWrite[" +name +"] = " +countWrite[name]);  */
+	
+             for (i in stack) {
+                console.log("Dead " +stack[i]);
+            }            
         };
     }
 
