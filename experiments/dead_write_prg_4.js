@@ -14,7 +14,6 @@ z = x + y;
 console.log(z);
 console.log(y);
 
-//dead write
 if (x < 2) 
 {
 	//dead write

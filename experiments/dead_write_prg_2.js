@@ -1,9 +1,6 @@
-var a = 1, b = 2, c = 3;
+var a = 1, b = 2, c = 3, d = 4;
 
 function foo (l) {
-	//dead write
-	var some = 10;
-	
 	return l + 1;
 }
 
