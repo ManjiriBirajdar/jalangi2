@@ -10,8 +10,16 @@
     
         function MyAnalysis() {
           
+            var traceWriter = new sandbox.TraceWriter("experiments/trace.log")
             var stack = [];  
-            
+             var stringList = [];
+
+            function logEvent(str) {                
+              
+                traceWriter.logToFile(str+"\n");
+                //@todo dump and clear the logs array once its size exceeds some constant, say 1024
+            }
+
             this.read = function (iid, name, val, isGlobal, isScriptLocal) {
                 var frameId = sandbox.smemory.getIDFromShadowObjectOrFrame(sandbox.smemory.getShadowFrame(name));
                 var ret = "read of frame(id=" + frameId + ")." + name;			
@@ -23,7 +31,7 @@
                    var nameVariable = str.slice(0, 1);
                     if(nameVariable === name)
                     {       
-                        stack.splice(i, 1); // delete stack[i];
+                        stack.splice(i, 1);
                     }
                 }               
             };
@@ -33,7 +41,7 @@
                 var ret = "write of frame(id=" + frameId + ")." + name;
                 ret += " at " + J$.iidToLocation(J$.sid, iid);			
            
-                stack.push(name+" ## Dead write location "+J$.iidToLocation(J$.sid, iid));             
+                stack.push(name+" ## Dead write location "+J$.iidToLocation(J$.sid, iid));         
             };
     
             this.endExecution = function () {
@@ -43,7 +51,16 @@
                 for(var i in stack)
                 {
                     console.log("Variable name is " +stack[i]);
+                    logEvent(stack[i]);
                 }
+
+                traceWriter.stopTracing();
+                var tw = new sandbox.TraceWriter("strings.json");
+                tw.logToFile(JSON.stringify(stringList)+"\n");
+                tw.stopTracing();
+                tw = new sandbox.TraceWriter("smap.json");
+                tw.logToFile(JSON.stringify(sandbox.smap)+"\n");
+                tw.stopTracing();		
             };
         }    
         sandbox.analysis = new MyAnalysis();    
