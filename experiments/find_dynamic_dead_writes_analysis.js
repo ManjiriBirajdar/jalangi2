@@ -12,8 +12,7 @@
     
         function MyAnalysis() {          
 		
-            var stack = [];               
-           
+            var stack = []; 
 
             this.read = function (iid, name, val, isGlobal, isScriptLocal) {
                 var frameId = sandbox.smemory.getIDFromShadowObjectOrFrame(sandbox.smemory.getShadowFrame(name));

@@ -16,15 +16,25 @@ var dWstack = [];
 var ast;
 
 //read the test file
-var testFile = "experiments/dead_write_prg_1.js";
+
+//take test file path from user
+var testFileName;
 
 //test file content
-var testFileContent = fs.readFileSync(testFile, 'utf8');
+var testFileContent;
 
 //final source program without dead writes
 var sourceProgram = [];
 
 ///////////////////////////////////////////////// Functions ///////////////////////////////////////////////////////
+
+function getFileNameAndContent() {
+    //test files name
+    testFileName = "experiments/dead_write_prg_1.js";
+
+    //read test file content
+    testFileContent = fs.readFileSync(testFileName, 'utf8');
+}
 
 //read dead write text file and get location of the dead writes in this program
 
@@ -56,14 +66,15 @@ function generateAST() {
 
     //AST using esprima
 
-    console.log("----------------- AST -----------------");
     ast = esprima.parseScript(testFileContent, { loc: true }, function (node, metadata) {
-        //console.log(metadata);
+        //  console.log(node);
     });
+
+    // console.log("\n AST Generated successfully \n");
 }
 
 
-function travrseASTAndDeleteDeadWrite(ast) {
+function travrseASTAndDeleteDeadWrites(ast) {
 
     //estraverse the AST
 
@@ -76,20 +87,20 @@ function travrseASTAndDeleteDeadWrite(ast) {
             //console.log(node);
             var found = false;
             var pgmCode;
-           
-          
-            if (node.type == 'ExpressionStatement' || node.type == 'VariableDeclarator') {               
+
+
+            if (node.type == 'VariableDeclaration' || node.type == 'ExpressionStatement' || node.type == 'FunctionDeclaration') {
 
                 //generate program using ast node value
                 pgmCode = escodegen.generate(node);
-                
-                //iterate over dead write locations
-                for (var i in dWstack) {              
+                // console.log("pgmCode = " +pgmCode);
 
-                    if (node.loc.start.line == dWstack[i][0]) 
-                    {
-                        console.log("Dead Write location matched at line number : " + node.loc.start.line);
-                        found = true;                      
+                //iterate over dead write locations
+                for (var i in dWstack) {
+
+                    if (node.loc.start.line == dWstack[i][0]) {
+                        // console.log("Dead Write location matched at line number : " + node.loc.start.line);
+                        found = true;
                     }
                     else {
                         for (var j in sourceProgram) {
@@ -111,21 +122,37 @@ function travrseASTAndDeleteDeadWrite(ast) {
         },
 
         //exit the node
-        leave: function (node, parent) {            
+        leave: function (node, parent) {
         }
-    });  
+    });
 }
 
 ///////////////////////////////////////////////// Main Program ///////////////////////////////////////////////////////
+
+//Get the test file name and content 
+getFileNameAndContent();
+
+//read th dead write locations from the file
 readDeadWritesFromFile();
 
+//generate AST using the test file content
 generateAST();
 
-travrseASTAndDeleteDeadWrite(ast);
+//traverse AST and delete dead writes, regenerate the source code and print on screen or file 
+travrseASTAndDeleteDeadWrites(ast);
 
-console.log(" \n ---------------------------------- Source Program Without dead writes ----------------------------------");
+console.log("---------------------------------- Source Program with dead writes ----------------------------------");
+
+console.log(testFileContent);
+
+console.log("---------------------------------- Source Program Without dead writes ----------------------------------");
 
 for (var i in sourceProgram) {
     console.log(sourceProgram[i]);
 }
 
+var traceWfh = fs.openSync('experiments/Test_File_Output_1.js', 'w');
+
+for (var i in sourceProgram) {
+        fs.writeSync(traceWfh, sourceProgram[i] + "\n");
+}		
