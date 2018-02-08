@@ -3,7 +3,9 @@
 
 /**
  * @author  Koushik Sen
- *
+ * 
+ * Edited by Manjiri Birajdar
+ * Description : Analysis to find dynamic dead write
  */
 
 (function (sandbox) {      
@@ -32,8 +34,8 @@
             this.write = function (iid, name, val, lhs, isGlobal, isScriptLocal) {
                 var frameId = sandbox.smemory.getIDFromShadowObjectOrFrame(sandbox.smemory.getShadowFrame(name));
                 var ret = "write of frame(id=" + frameId + ")." + name;
-                ret += " at " + J$.iidToLocation(J$.sid, iid);			
-           
+                ret += " at " + J$.iidToLocation(J$.sid, iid);		
+                
                 stack.push(name+" ## Dead write location "+J$.iidToLocation(J$.sid, iid));         
             };
     
@@ -47,8 +49,12 @@
 			
                 for(var i in stack)
                 {
-                    console.log("Variable name is " +stack[i]);     
-					fs.writeSync(traceWfh, stack[i] + "\n");
+                    console.log("Variable name is " +stack[i] +i);                       
+
+                    if(i != (stack.length - 1))
+                        fs.writeSync(traceWfh, stack[i] + ",");
+                    else
+                        fs.writeSync(traceWfh, stack[i]);
                 }							
             };
         }    
