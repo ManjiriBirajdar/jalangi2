@@ -8,6 +8,7 @@
     "codemirror": "5.1.0",
     "cover": "0.2.9",
     "datatables": "1.10.6",
+    "escodegen": "^1.9.0",
     "esotope": "1.4.5",
     "esprima": "^4.0.0",
     "estraverse": "4.0.0",

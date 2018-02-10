@@ -1,8 +1,6 @@
 ///////////////////////////////////////////////// Global Declarations ///////////////////////////////////////////////////////
 var esprima = require('esprima');
 
-var esmangle = require('esmangle');
-
 var estraverse = require('estraverse');
 
 var escodegen = require('escodegen');
@@ -30,7 +28,7 @@ var sourceProgram = [];
 
 function getFileNameAndContent() {
     //test files name
-    testFileName = "experiments/dead_write_prg_1.js";
+    testFileName = "experiments/dead_write_prg_2.js";
 
     //read test file content
     testFileContent = fs.readFileSync(testFileName, 'utf8');
@@ -151,7 +149,7 @@ for (var i in sourceProgram) {
     console.log(sourceProgram[i]);
 }
 
-var traceWfh = fs.openSync('experiments/Test_File_Output_1.js', 'w');
+var traceWfh = fs.openSync('experiments/dead_write_prg_2_new.js', 'w');
 
 for (var i in sourceProgram) {
         fs.writeSync(traceWfh, sourceProgram[i] + "\n");

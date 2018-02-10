@@ -22,7 +22,12 @@
                 for(var i in stack)
                 {
                    var str = stack[i];
+				   //remove 1 element from index 0
+				   
+				   //str.slice(beginIndex[, endIndex]) // return value: A new string containing the extracted section of the string
+				   
                    var nameVariable = str.slice(0, 1);
+				   
                     if(nameVariable === name)
                     {       
                         stack.splice(i, 1);
@@ -44,11 +49,11 @@
 				var traceWfh = fs.openSync('experiments/dead_writes_location.txt', 'w');
 				
 				
-                console.log("------------------------Total Dead Writes in Program (including variables initialized but not used)-------------------------");
+                console.log("------------------------Total Dead Writes in Program-------------------------");
 			
                 for(var i in stack)
                 {
-                    console.log("Variable name is " +stack[i] +i);                       
+                    console.log("Variable name is " +stack[i]);                       
 
                     if(i != (stack.length - 1))
                         fs.writeSync(traceWfh, stack[i] + ",");
@@ -64,6 +69,6 @@
 
 COMMAND TO RUN:
 
-node src/js/commands/jalangi.js --inlineIID --inlineSource --analysis src/js/sample_analyses/ChainedAnalyses.js --analysis src/js/runtime/SMemory.js --analysis experiments\dynamic_dead_write_analysis.js experiments\dead_write_prg_1.js
+node src/js/commands/jalangi.js --inlineIID --inlineSource --analysis src/js/sample_analyses/ChainedAnalyses.js --analysis src/js/runtime/SMemory.js --analysis experiments\find_dynamic_dead_writes_analysis.js experiments\dead_write_prg_1.js
 
 */
