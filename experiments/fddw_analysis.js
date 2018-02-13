@@ -69,6 +69,6 @@
 
 COMMAND TO RUN:
 
-node src/js/commands/jalangi.js --inlineIID --inlineSource --analysis src/js/sample_analyses/ChainedAnalyses.js --analysis src/js/runtime/SMemory.js --analysis experiments\find_dynamic_dead_writes_analysis.js experiments\dead_write_prg_1.js
+node src/js/commands/jalangi.js --inlineIID --inlineSource --analysis src/js/sample_analyses/ChainedAnalyses.js --analysis src/js/runtime/SMemory.js --analysis experiments\fddw_analysis.js experiments\tests\dead_write_prg_1.js
 
 */

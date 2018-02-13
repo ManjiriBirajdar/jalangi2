@@ -28,7 +28,7 @@ var sourceProgram = [];
 
 function getFileNameAndContent() {
     //test files name
-    testFileName = "experiments/dead_write_prg_1.js";
+    testFileName = "experiments/tests/dead_write_prg_1.js";
 
     //read test file content
     testFileContent = fs.readFileSync(testFileName, 'utf8');
@@ -149,7 +149,7 @@ for (var i in sourceProgram) {
     console.log(sourceProgram[i]);
 }
 
-var traceWfh = fs.openSync('experiments/dead_write_prg_1_new.js', 'w');
+var traceWfh = fs.openSync('experiments/code_remove_scripts/dead_write_prg_1_new.js', 'w');
 
 for (var i in sourceProgram) {
         fs.writeSync(traceWfh, sourceProgram[i] + "\n");
