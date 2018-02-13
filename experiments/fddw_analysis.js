@@ -32,7 +32,8 @@
                     {       
                         stack.splice(i, 1);
                     }
-                }               
+                }
+				//console.log(stack);				
             };
     
             this.write = function (iid, name, val, lhs, isGlobal, isScriptLocal) {
@@ -40,7 +41,8 @@
                 var ret = "write of frame(id=" + frameId + ")." + name;
                 ret += " at " + J$.iidToLocation(J$.sid, iid);		
                 
-                stack.push(name+" ## Dead write location "+J$.iidToLocation(J$.sid, iid));         
+                stack.push(name+" ## Dead write location "+J$.iidToLocation(J$.sid, iid));  
+				//console.log(name+" ## Dead write location "+J$.iidToLocation(J$.sid, iid));				
             };
     
             this.endExecution = function () {
