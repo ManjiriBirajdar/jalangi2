@@ -10,5 +10,14 @@ function id(x){
     return x;
 }
 
-//dead write
 var t = id(another);
+
+//dead write
+var sts = id(12);
+console.log(t);
+
+var ots = another * t;
+console.log(ots);
+
+//dead write
+t = t * ots;

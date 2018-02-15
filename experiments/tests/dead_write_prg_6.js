@@ -1,6 +1,6 @@
 function Foo(){
-    this.a = 20;
-    this.b = 30;
+    this.a = 10;
+    this.b = 20;
 }
 
 Foo.prototype.add = function (){

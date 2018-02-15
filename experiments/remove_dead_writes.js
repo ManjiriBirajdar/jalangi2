@@ -1,10 +1,7 @@
 ///////////////////////////////////////////////// Global Declarations ///////////////////////////////////////////////////////
 var esprima = require('esprima');
-
 var estraverse = require('estraverse');
-
 var escodegen = require('escodegen');
-
 const fs = require('fs');
 
 //dead write locations
@@ -12,8 +9,6 @@ var dWstack = [];
 
 //ast generated after esprima
 var ast;
-
-//read the test file
 
 //take test file path from user
 var testFileName;
@@ -28,7 +23,7 @@ var sourceProgram = [];
 
 function getFileNameAndContent() {
     //test files name
-    testFileName = "experiments/dead_write_prg_2.js";
+    testFileName = "experiments/tests/dead_write_prg_5.js";
 
     //read test file content
     testFileContent = fs.readFileSync(testFileName, 'utf8');
@@ -81,11 +76,11 @@ function travrseASTAndDeleteDeadWrites(ast) {
         //enter in the node
         enter: function (node, parent) {
 
-            //make a new sourceProgram without dead writes   
+            //make a new sourceProgram without dead writes  
+			
             //console.log(node);
             var found = false;
             var pgmCode;
-
 
             if (node.type == 'VariableDeclaration' || node.type == 'ExpressionStatement' || node.type == 'FunctionDeclaration') {
 
@@ -149,7 +144,7 @@ for (var i in sourceProgram) {
     console.log(sourceProgram[i]);
 }
 
-var traceWfh = fs.openSync('experiments/dead_write_prg_2_new.js', 'w');
+var traceWfh = fs.openSync('experiments/tests/file_without_dead_writes.js', 'w');
 
 for (var i in sourceProgram) {
         fs.writeSync(traceWfh, sourceProgram[i] + "\n");

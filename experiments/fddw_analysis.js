@@ -13,6 +13,8 @@
     function MyAnalysis() {
 
         var stack = [];
+        var writeCount = 0;
+        var deadWriteCount = 0;
 
         this.read = function (iid, name, val, isGlobal, isScriptLocal) {
 
@@ -37,8 +39,7 @@
             ret += " at " + J$.iidToLocation(J$.sid, iid);
 
             stack.push(name + ", Dead write location " + J$.iidToLocation(J$.sid, iid));
-            //  console.log(name + ", Dead write location " + J$.iidToLocation(J$.sid, iid));
-
+            writeCount = writeCount + 1;
         };
 
         this.endExecution = function () {
@@ -50,12 +51,18 @@
 
             for (var i in stack) {
                 console.log("Variable name is " + stack[i]);
-
+                deadWriteCount = deadWriteCount + 1;
                 if (i != (stack.length - 1))
                     fs.writeSync(traceWfh, stack[i] + ",");
                 else
                     fs.writeSync(traceWfh, stack[i]);
             }
+
+            console.log("------------------------ More Information -------------------------");
+            //console.log("writeCount = " +writeCount);
+            //console.log("Total dead write count = " +deadWriteCount);
+            var percOfdeadWrites = (deadWriteCount / writeCount) * 100;
+            console.log("what percentage of writes are dead? Answer: " + percOfdeadWrites);
         };
     }
     sandbox.analysis = new MyAnalysis();

@@ -1,14 +1,16 @@
-var a = 1;
-var b = 2;
-var c = 3;
+var p = 1;
+var q = 2;
+var r = 3;
 
 function foo (l) {
 	return l + 1;
 }
 
-b = foo (b);
-console.log (a + b);
+q = foo (q);
+console.log (p + q);
+
 //dead write
-a = foo (a);
+p = foo (p);
+
 //dead write
-c = foo (c);
+r = foo (r);
