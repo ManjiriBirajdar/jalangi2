@@ -1,10 +1,9 @@
-var a = 10, c = 10, b = a * 2;
-console.log("value of b is " +b);
+function foo (l) {
+	return l + 1;
+ }
+var a = 1, b = 2;
+b = foo (b);
+console .log (a + b);
 
 //dead write
-a = b / 2;
-
-b = c * 2;
-
-//dead write
-c = b / 2;
+a = foo (a);

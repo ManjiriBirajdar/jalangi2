@@ -15,18 +15,23 @@
         var stack = [];
         var writeCount = 0;
         var deadWriteCount = 0;
+    
+        function writeFlags(isGlobal, isScriptLocal) {
+            if (isGlobal && isScriptLocal) { return "global and script-local?!" }
+            else if (isGlobal) { return "global" }
+            else if (isScriptLocal) { return "script-local" }
+            else { return "local" }
+        }
 
         this.read = function (iid, name, val, isGlobal, isScriptLocal) {
-
-            var frameId = sandbox.smemory.getIDFromShadowObjectOrFrame(sandbox.smemory.getShadowFrame(name));
 
             for (var i in stack) {
 
                 var str = stack[i];
-
+                var flag = writeFlags(isGlobal, isScriptLocal);
                 var nameVariable = str.split(",");
-
-                if (nameVariable[0] === name) {
+             
+                if (nameVariable[0] === name && nameVariable[1] === flag) {                  
                     stack.splice(i, 1);
                 }
             }
@@ -34,11 +39,8 @@
 
         this.write = function (iid, name, val, lhs, isGlobal, isScriptLocal) {
 
-            var frameId = sandbox.smemory.getIDFromShadowObjectOrFrame(sandbox.smemory.getShadowFrame(name));
-            var ret = "write of frame(id=" + frameId + ")." + name;
-            ret += " at " + J$.iidToLocation(J$.sid, iid);
-
-            stack.push(name + ", Dead write location " + J$.iidToLocation(J$.sid, iid));
+            var flag = writeFlags(isGlobal, isScriptLocal);
+            stack.push(name + "," + flag + "," + J$.iidToLocation(J$.sid, iid));
             writeCount = writeCount + 1;
         };
 
@@ -47,22 +49,25 @@
             const fs = require('fs');
             var traceWfh = fs.openSync('experiments/dead_writes_location.txt', 'w');
 
-            console.log("------------------------Total Dead Writes in Program-------------------------");
+            console.log("------------------------Total Dead Writes in Program-------------------------\n");
 
             for (var i in stack) {
-                console.log("Variable name is " + stack[i]);
-                deadWriteCount = deadWriteCount + 1;
-                if (i != (stack.length - 1))
-                    fs.writeSync(traceWfh, stack[i] + ",");
-                else
-                    fs.writeSync(traceWfh, stack[i]);
-            }
 
-            console.log("------------------------ More Information -------------------------");
-            //console.log("writeCount = " +writeCount);
-            //console.log("Total dead write count = " +deadWriteCount);
+                var stackValue =  stack[i].split(",");
+                console.log("Variable name is " + stackValue[0] + " and dead write location is " +stackValue[2]);            
+
+                deadWriteCount = deadWriteCount + 1;
+                
+                if (i != (stack.length - 1))
+                    fs.writeSync(traceWfh, stackValue[0] + "§" +stackValue[2] +",");
+                else
+                    fs.writeSync(traceWfh, stackValue[0] + "§" +stackValue[2]);
+            }   
+
+            console.log("\n------------------------ More Information -------------------------");
+          
             var percOfdeadWrites = (deadWriteCount / writeCount) * 100;
-            console.log("what percentage of writes are dead? Answer: " + percOfdeadWrites);
+            console.log("Percentage of dead writes in program: " + percOfdeadWrites +"%");
         };
     }
     sandbox.analysis = new MyAnalysis();

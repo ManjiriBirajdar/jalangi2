@@ -16,14 +16,11 @@ var testFileName;
 //test file content
 var testFileContent;
 
-//final source program without dead writes
-var sourceProgram = [];
-
 ///////////////////////////////////////////////// Functions ///////////////////////////////////////////////////////
 
 function getFileNameAndContent() {
     //test files name
-    testFileName = "experiments/tests/dead_write_prg_5.js";
+    testFileName = "experiments/tests/dead_write_prg_1.js";
 
     //read test file content
     testFileContent = fs.readFileSync(testFileName, 'utf8');
@@ -37,21 +34,25 @@ function readDeadWritesFromFile() {
 
     var deadWriteFileContent = fs.readFileSync(deadWriteFile, 'utf8');
 
-    var location = deadWriteFileContent.split(",");
+    var getLines = deadWriteFileContent.split(",");
 
     var mainDeadWriteLoc = [];
 
-    for (var loc in location) {
+    for (var iLine in getLines) {
 
-        var strLine = location[loc];
+        var singleLine = getLines[iLine];
 
-        strLine = strLine.substr(1, (strLine.length - 2));
+        var lineSplit = singleLine.split("§");
+       // console.log("lineSplit - " +lineSplit[0] +" \n" + lineSplit[1]);  
 
-        var locDetails = strLine.split(":");
+        var locationPoints = lineSplit[1].split(":");
+        //console.log("locationPoints - " +locationPoints);
 
-        mainDeadWriteLoc = [locDetails[2], locDetails[3], + locDetails[4], + locDetails[5]];
+        locationPoints[5] = locationPoints[5].substring(0, locationPoints[5].length - 1); 
+        mainDeadWriteLoc = [locationPoints[2], locationPoints[3], locationPoints[4], locationPoints[5]];
 
         dWstack.push(mainDeadWriteLoc);
+//        console.log("after push dWstack = " +dWstack);
     }
 }
 
@@ -62,64 +63,43 @@ function generateAST() {
     ast = esprima.parseScript(testFileContent, { loc: true }, function (node, metadata) {
         //  console.log(node);
     });
-
-    // console.log("\n AST Generated successfully \n");
 }
 
 
 function travrseASTAndDeleteDeadWrites(ast) {
 
-    //estraverse the AST
-
-    estraverse.traverse(ast, {
-
-        //enter in the node
+    estraverse.replace(ast, {
         enter: function (node, parent) {
-
-            //make a new sourceProgram without dead writes  
-			
-            //console.log(node);
-            var found = false;
-            var pgmCode;
 
             if (node.type == 'VariableDeclaration' || node.type == 'ExpressionStatement' || node.type == 'FunctionDeclaration') {
 
-                //generate program using ast node value
-                pgmCode = escodegen.generate(node);
-                // console.log("pgmCode = " +pgmCode);
-
-                //iterate over dead write locations
                 for (var i in dWstack) {
 
+                    //console.log(node.loc.start.line + " === " +dWstack[i][0]);
+
                     if (node.loc.start.line == dWstack[i][0]) {
-                        // console.log("Dead Write location matched at line number : " + node.loc.start.line);
-                        found = true;
+                        //   console.log("Dead Write location matched at line number : " + node.loc.start.line);
+                        this.remove();
                     }
-                    else {
-                        for (var j in sourceProgram) {
-                            if (pgmCode == sourceProgram[j]) {
-                                //dont push
-                                found = true;
-                            }
-                        }
-                    }
-                }
-
-                //  if node is already present (false) then push on to the stack
-
-                if (found == false) {
-                    // console.log("It is not present in sourceProgram so push on stack : " + node);
-                    sourceProgram.push(pgmCode);
                 }
             }
-        },
-
-        //exit the node
-        leave: function (node, parent) {
         }
     });
-}
 
+
+    console.log("---------------------------------- Source Program with dead writes ----------------------------------");
+    console.log(testFileContent);
+
+    //generate program code using ast
+    var sourceProgram = escodegen.generate(ast);
+    console.log("---------------------------------- Source Program Without dead writes ----------------------------------");
+
+    console.log(sourceProgram);
+
+    fs.writeFile('experiments/tests/file_without_dead_writes.js', sourceProgram, function (err) {
+        if (err) return console.log(err);
+    });
+}
 ///////////////////////////////////////////////// Main Program ///////////////////////////////////////////////////////
 
 //Get the test file name and content 
@@ -133,19 +113,3 @@ generateAST();
 
 //traverse AST and delete dead writes, regenerate the source code and print on screen or file 
 travrseASTAndDeleteDeadWrites(ast);
-
-console.log("---------------------------------- Source Program with dead writes ----------------------------------");
-
-console.log(testFileContent);
-
-console.log("---------------------------------- Source Program Without dead writes ----------------------------------");
-
-for (var i in sourceProgram) {
-    console.log(sourceProgram[i]);
-}
-
-var traceWfh = fs.openSync('experiments/tests/file_without_dead_writes.js', 'w');
-
-for (var i in sourceProgram) {
-        fs.writeSync(traceWfh, sourceProgram[i] + "\n");
-}		
